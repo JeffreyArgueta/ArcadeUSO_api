@@ -29,6 +29,24 @@ CHARACTER SET utf8mb4
 COLLATE utf8mb4_bin;
 
 -- -----------------------------------------------------
+-- Table `arcade_uso`.`tokens_store`
+-- -----------------------------------------------------
+CREATE TABLE `tokens_store` (
+    `id_token` INT UNSIGNED AUTO_INCREMENT,
+    `jti` CHAR(36) UNIQUE NOT NULL,
+    `id_user` INT UNSIGNED NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `expires_at` TIMESTAMP DEFAULT (CURRENT_TIMESTAMP + INTERVAL 24 HOUR),
+    PRIMARY KEY (`id_token`),
+    UNIQUE INDEX `jti` (`jti` ASC) VISIBLE,
+	CONSTRAINT `tokens_store_ibfk_1` FOREIGN KEY (`id_user`)
+		REFERENCES `arcade_uso`.`users` (`id_user`) ON DELETE CASCADE
+)
+ENGINE InnoDB
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_bin;
+
+-- -----------------------------------------------------
 -- Table `arcade_uso`.`catbross`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `catbross` (
@@ -128,6 +146,10 @@ CREATE INDEX `idx_user` ON `catbross`(`id_user`);
 -- Table `arcade_uso`.`minesweeper`
 -- -----------------------------------------------------
 CREATE INDEX `idx_user` ON `minesweeper`(`id_user`);
+
+CREATE EVENT cleanup_expired_tokens
+ON SCHEDULE EVERY 1 DAY
+DO DELETE FROM tokens_store WHERE expires_at < NOW();
 
 INSERT INTO `arcade_uso`.`rewards` (`rarity`, `daro_points_value`, `chance`, `duration`)
 VALUES	('common',		10,		1,		5000.0),

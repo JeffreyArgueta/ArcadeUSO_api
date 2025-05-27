@@ -88,7 +88,7 @@ const createUser = async (userData) => {
         return null;
       }
 
-      const hashedPassword = bcrypt.hashSync(userData.password, 10);
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
       user = await User.create({
         username: userData.username,
         email: userData.email,
