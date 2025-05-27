@@ -138,6 +138,37 @@ ENGINE InnoDB
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_bin;
 
+CREATE TABLE `arcade_uso`.`tic_tac_toe_games` (
+  `id_game` INT UNSIGNED AUTO_INCREMENT,
+  `id_user` INT UNSIGNED NOT NULL,
+  `difficulty` ENUM('facil', 'medio', 'dificil') NOT NULL,
+  `symbol` ENUM('X', 'O') NOT NULL,
+  `result` ENUM('win', 'lose', 'tie') NOT NULL,
+  `uso_coins_earned` INT UNSIGNED NOT NULL,
+  `rounds_played` INT UNSIGNED NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_game`),
+  FOREIGN KEY (`id_user`) REFERENCES `arcade_uso`.`users`(`id_user`) ON DELETE CASCADE
+)
+ENGINE InnoDB
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_bin;
+
+CREATE TABLE `arcade_uso`.`tic_tac_toe_saves` (
+  `id_user` INT UNSIGNED NOT NULL,
+  `board_state` VARCHAR(20) NOT NULL,  -- ejemplo: 'X,O,X,null,null,O,X,null,O'
+  `rounds` TINYINT UNSIGNED NOT NULL,
+  `player_symbol` ENUM('X', 'O') NOT NULL,
+  `difficulty` ENUM('facil', 'medio', 'dificil') NOT NULL,
+  `session_uso_coins` INT UNSIGNED NOT NULL DEFAULT 0,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_user`),
+  FOREIGN KEY (`id_user`) REFERENCES `arcade_uso`.`users`(`id_user`) ON DELETE CASCADE
+)
+ENGINE InnoDB
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_bin;
+
 -- -----------------------------------------------------
 -- Index `arcade_uso`.`catbross`
 -- -----------------------------------------------------
