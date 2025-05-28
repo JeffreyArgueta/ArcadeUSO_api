@@ -24,36 +24,42 @@ const login = async (req, res) => {
 
 const loginGoogle = async (req, res) => {
   try {
-    const { code } = req.body;
+    const { code } = req.query;
     if (!code) {
-      return res.status(400).json({ error: "⚠️ Código de autorización de Google es obligatorio." });
+      return res.status(400).json({ error: "⚠️ Código de autorización requerido." });
     }
 
     const tokens = await getTokens(code);
     const googleData = await verifyGoogleToken(tokens.id_token);
-    if (!googleData) {
-      return res.status(401).json({ error: "⚠️ Token inválido." });
-    }
-
     let user = await UserService.getUserByEmail(googleData.email);
 
     if (!user) {
-      return res.status(202).json({
-        message: "⚠️ Usuario no registrado. Debe elegir un username.",
+      user = await UserService.createUser({
+        username: googleData.name.replace(/\s+/g, "").toLowerCase(),
         email: googleData.email,
         google_id: googleData.google_id,
+        authentication_method: "google",
+        role: "player",
+        uso_coins: 0,
+        daro_points: 0,
       });
+
+      console.log(`🆕 Usuario registrado automáticamente con Google: ${googleData.email}`);
+    } else {
+      console.log(`🔐 Usuario autenticado con Google: ${googleData.email}`);
     }
 
     const token = generateToken(user);
-    res.status(200).json({
+
+    return res.status(200).json({
       message: "✅ Login exitoso",
       token,
       accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token
+      refreshToken: tokens.refresh_token,
     });
+
   } catch (error) {
-    errorHandler(res, error, "Error en autenticación con Google");
+    errorHandler(res, error, "Error en login con Google");
   }
 };
 
@@ -73,34 +79,19 @@ const refreshToken = async (req, res) => {
 
 const createUserWithGoogle = async (req, res) => {
   try {
-    const { username, email, google_id, code } = req.body;
+    const { username, email, google_id, refreshToken } = req.body;
 
-    if (!username || !email || !google_id || !code) {
+    if (!username || !email || !google_id || !refreshToken) {
       return res.status(400).json({ error: "⚠️ Todos los campos son obligatorios." });
     }
 
     if (!validateUsername(username)) {
-      return res.status(400).json({ error: "⚠️ Username inválido. Usa solo letras, números o _ entre 3-20 caracteres." });
+      return res.status(400).json({ error: "⚠️ Username inválido." });
     }
 
-    let isTaken = await UserService.getUserByUsername(username);
+    const isTaken = await UserService.getUserByUsername(username);
     if (isTaken) {
-      return res.status(409).json({ error: "⚠️ Username en uso. Elige otro." });
-    }
-
-    if (!code || typeof code !== "string") {
-      return res.status(400).json({ error: "⚠️ Código de autorización inválido." });
-    }
-
-    let tokens;
-    try {
-      tokens = await getTokens(code);
-    } catch (error) {
-      return res.status(401).json({ error: "❌ Error obteniendo tokens de Google. Código inválido o sesión expirada." });
-    }
-
-    if (!email || !google_id) {
-      return res.status(400).json({ error: "⚠️ No se pudo obtener email o Google ID desde el token. Verifica la configuración de OAuth." });
+      return res.status(409).json({ error: "⚠️ Username ya en uso." });
     }
 
     const newUser = await UserService.createUser({
@@ -109,24 +100,19 @@ const createUserWithGoogle = async (req, res) => {
       google_id,
       authentication_method: "google",
       role: "player",
+      uso_coins: 0,
+      daro_points: 0,
     });
 
     const token = generateToken(newUser);
 
-    await TokenStore.create({
-      jti: uuidv4(),
-      id_user: newUser.id_user,
-      refresh_token: tokens.refresh_token
-    });
-
     res.status(201).json({
       message: "✅ Registro exitoso",
       token,
-      accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token
+      refreshToken
     });
   } catch (error) {
-    errorHandler(res, error, "Error registrando usuario");
+    errorHandler(res, error, "Error registrando usuario con Google");
   }
 };
 

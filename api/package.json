@@ -18,6 +18,7 @@
     "express": "^5.1.0",
     "express-myconnection": "^1.0.4",
     "express-validator": "^7.2.1",
+    "google-auth-library": "^9.15.1",
     "googleapis": "^149.0.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
