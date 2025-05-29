@@ -2,6 +2,7 @@ const { getGoogleAuthURL, getTokens, verifyGoogleToken, generateToken, refreshAc
 const UserService = require("../services/user.service");
 const errorHandler = require("../middlewares/errorHandler.middleware");
 const validateUsername = require("../middlewares/validateUsername.middleware");
+const logger = require("../config/logger");
 
 const login = async (req, res) => {
   try {
@@ -11,7 +12,7 @@ const login = async (req, res) => {
     }
 
     const user = await UserService.getUserByEmail(email);
-    if (!user || !verifyPassword(password, user.password)) {
+    if (!user || !(await verifyPassword(password, user.password))) {
       return res.status(401).json({ error: "⚠️ Credenciales incorrectas." });
     }
 
@@ -31,6 +32,11 @@ const loginGoogle = async (req, res) => {
 
     const tokens = await getTokens(code);
     const googleData = await verifyGoogleToken(tokens.id_token);
+
+    if (!googleData || !googleData.email) {
+      return res.status(400).json({ error: "⚠️ No se pudo obtener los datos de Google." });
+    }
+
     let user = await UserService.getUserByEmail(googleData.email);
 
     if (!user) {
@@ -44,9 +50,9 @@ const loginGoogle = async (req, res) => {
         daro_points: 0,
       });
 
-      console.log(`🆕 Usuario registrado automáticamente con Google: ${googleData.email}`);
+      logger.info(`ℹ️ Usuario registrado automáticamente con Google: ${googleData.email}`);
     } else {
-      console.log(`🔐 Usuario autenticado con Google: ${googleData.email}`);
+      logger.info(`🔐 Usuario autenticado con Google: ${googleData.email}`);
     }
 
     const token = generateToken(user);
@@ -79,9 +85,9 @@ const refreshToken = async (req, res) => {
 
 const createUserWithGoogle = async (req, res) => {
   try {
-    const { username, email, google_id, refreshToken } = req.body;
+    const { username, email, google_id } = req.body;
 
-    if (!username || !email || !google_id || !refreshToken) {
+    if (!username || !email || !google_id) {
       return res.status(400).json({ error: "⚠️ Todos los campos son obligatorios." });
     }
 
@@ -106,11 +112,7 @@ const createUserWithGoogle = async (req, res) => {
 
     const token = generateToken(newUser);
 
-    res.status(201).json({
-      message: "✅ Registro exitoso",
-      token,
-      refreshToken
-    });
+    res.status(201).json({ message: "✅ Registro exitoso", token });
   } catch (error) {
     errorHandler(res, error, "Error registrando usuario con Google");
   }

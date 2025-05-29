@@ -21,7 +21,7 @@ const GachaponAttempts = sequelize.define("GachaponAttempts", {
   },
   daro_points_value_earned: {
     type: DataTypes.INTEGER.UNSIGNED,
-    allowNull: false,
+    allowNull: false
   }
 }, {
   timestamps: true,

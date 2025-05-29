@@ -29,18 +29,39 @@ CHARACTER SET utf8mb4
 COLLATE utf8mb4_bin;
 
 -- -----------------------------------------------------
--- Table `arcade_uso`.`tokens_store`
+-- Table `arcade_uso`.`rewards`
 -- -----------------------------------------------------
-CREATE TABLE `tokens_store` (
-    `id_token` INT UNSIGNED AUTO_INCREMENT,
-    `jti` CHAR(36) UNIQUE NOT NULL,
-    `id_user` INT UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `arcade_uso`.`rewards` (
+    `id_reward` INT UNSIGNED AUTO_INCREMENT,
+    `rarity` ENUM('common', 'epic', 'legendary') NOT NULL,
+    `daro_points_value` INT UNSIGNED NOT NULL,	-- Puntos generados al obtener esta recompensa
+    `chance` INT UNSIGNED NOT NULL,				-- Chance de conseguir la recompensa
+    `duration` DECIMAL(10,4) NOT NULL,			-- Duracion del gif de la recompensa
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    `expires_at` TIMESTAMP DEFAULT (CURRENT_TIMESTAMP + INTERVAL 24 HOUR),
-    PRIMARY KEY (`id_token`),
-    UNIQUE INDEX `jti` (`jti` ASC) VISIBLE,
-	CONSTRAINT `tokens_store_ibfk_1` FOREIGN KEY (`id_user`)
-		REFERENCES `arcade_uso`.`users` (`id_user`) ON DELETE CASCADE
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id_reward`)
+)
+ENGINE InnoDB
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_bin;
+
+-- -----------------------------------------------------
+-- Table `arcade_uso`.`gachapon_attempts`
+-- -----------------------------------------------------
+CREATE TABLE `arcade_uso`.`gachapon_attempts` (
+    `id_attempt` INT UNSIGNED AUTO_INCREMENT,
+    `id_user` INT UNSIGNED NOT NULL,
+    `id_reward` INT UNSIGNED NOT NULL,
+    `daro_points_value_earned` INT UNSIGNED NOT NULL, 	-- Se obtiene desde `rewards.points_value`
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id_attempt`),
+    INDEX `id_user` (`id_user` ASC) VISIBLE,
+	INDEX `id_reward` (`id_reward` ASC) VISIBLE,
+	CONSTRAINT `gachapon_attempts_ibfk_1` FOREIGN KEY (`id_user`)
+		REFERENCES `arcade_uso`.`users` (`id_user`) ON DELETE CASCADE,
+	CONSTRAINT `gachapon_attempts_ibfk_2` FOREIGN KEY (`id_reward`)
+		REFERENCES `arcade_uso`.`rewards` (`id_reward`) ON DELETE CASCADE
 )
 ENGINE InnoDB
 CHARACTER SET utf8mb4
@@ -71,7 +92,7 @@ COLLATE utf8mb4_bin;
 CREATE TABLE `arcade_uso`.`minesweeper` (
   `id_mine` INT UNSIGNED AUTO_INCREMENT,
   `id_user` INT UNSIGNED NOT NULL,
-  `uso_coins_obtained` INT UNSIGNED NOT NULL,
+  `uso_coins_earned` INT UNSIGNED NOT NULL,
   `won` BOOLEAN NOT NULL DEFAULT FALSE,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -84,37 +105,42 @@ CHARACTER SET utf8mb4
 COLLATE utf8mb4_bin;
 
 -- -----------------------------------------------------
--- Table `arcade_uso`.`rewards`
+-- Table `arcade_uso`.`tic_tac_toe_games`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `arcade_uso`.`rewards` (
-    `id_reward` INT UNSIGNED AUTO_INCREMENT,
-    `rarity` ENUM('common', 'epic', 'legendary') NOT NULL,
-    `daro_points_value` INT UNSIGNED NOT NULL,	-- Puntos generados al obtener esta recompensa
-    `chance` INT UNSIGNED NOT NULL,				-- Chance de conseguir la recompensa
-    `duration` DECIMAL(10,4) NOT NULL,			-- Duracion del gif de la recompensa
-    PRIMARY KEY (`id_reward`)
+CREATE TABLE `arcade_uso`.`tic_tac_toe_games` (
+  `id_game` INT UNSIGNED AUTO_INCREMENT,
+  `id_user` INT UNSIGNED NOT NULL,
+  `difficulty` ENUM('easy', 'medium', 'hard') NOT NULL,
+  `symbol` ENUM('X', 'O') NOT NULL,
+  `result` ENUM('win', 'lose', 'tie') NOT NULL,
+  `uso_coins_earned` INT UNSIGNED NOT NULL,
+  `rounds_played` INT UNSIGNED NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_game`),
+  CONSTRAINT `game_ibfk_1` FOREIGN KEY (`id_user`)
+		REFERENCES `arcade_uso`.`users` (`id_user`) ON DELETE CASCADE
 )
 ENGINE InnoDB
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_bin;
 
 -- -----------------------------------------------------
--- Table `arcade_uso`.`gachapon_attempts`
+-- Table `arcade_uso`.`tic_tac_toe_saves`
 -- -----------------------------------------------------
-CREATE TABLE `arcade_uso`.`gachapon_attempts` (
-    `id_attempt` INT UNSIGNED AUTO_INCREMENT,
-    `id_user` INT UNSIGNED NOT NULL,
-    `id_reward` INT UNSIGNED NOT NULL,
-    `daro_points_value_earned` INT UNSIGNED NOT NULL, 	-- Se obtiene desde `rewards.points_value`
-    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id_attempt`),
-    INDEX `id_user` (`id_user` ASC) VISIBLE,
-	INDEX `id_reward` (`id_reward` ASC) VISIBLE,
-	CONSTRAINT `gachapon_attempts_ibfk_1` FOREIGN KEY (`id_user`)
-		REFERENCES `arcade_uso`.`users` (`id_user`) ON DELETE CASCADE,
-	CONSTRAINT `gachapon_attempts_ibfk_2` FOREIGN KEY (`id_reward`)
-		REFERENCES `arcade_uso`.`rewards` (`id_reward`) ON DELETE CASCADE
+CREATE TABLE `arcade_uso`.`tic_tac_toe_saves` (
+  `id_save` INT UNSIGNED AUTO_INCREMENT,
+  `id_user` INT UNSIGNED NOT NULL,
+  `board_state` VARCHAR(20) NOT NULL,  -- ejemplo: 'X,O,X,null,null,O,X,null,O'
+  `rounds` TINYINT UNSIGNED NOT NULL,
+  `difficulty` ENUM('easy', 'medium', 'hard') NOT NULL,
+  `player_symbol` ENUM('X', 'O') NOT NULL,
+  `session_uso_coins` INT UNSIGNED NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_save`),
+  CONSTRAINT `save_ibfk_1` FOREIGN KEY (`id_user`)
+		REFERENCES `arcade_uso`.`users` (`id_user`) ON DELETE CASCADE
 )
 ENGINE InnoDB
 CHARACTER SET utf8mb4
@@ -137,50 +163,6 @@ CREATE TABLE `arcade_uso`.`chat` (
 ENGINE InnoDB
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_bin;
-
-CREATE TABLE `arcade_uso`.`tic_tac_toe_games` (
-  `id_game` INT UNSIGNED AUTO_INCREMENT,
-  `id_user` INT UNSIGNED NOT NULL,
-  `difficulty` ENUM('facil', 'medio', 'dificil') NOT NULL,
-  `symbol` ENUM('X', 'O') NOT NULL,
-  `result` ENUM('win', 'lose', 'tie') NOT NULL,
-  `uso_coins_earned` INT UNSIGNED NOT NULL,
-  `rounds_played` INT UNSIGNED NOT NULL,
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id_game`),
-  FOREIGN KEY (`id_user`) REFERENCES `arcade_uso`.`users`(`id_user`) ON DELETE CASCADE
-)
-ENGINE InnoDB
-CHARACTER SET utf8mb4
-COLLATE utf8mb4_bin;
-
-CREATE TABLE `arcade_uso`.`tic_tac_toe_saves` (
-  `id_user` INT UNSIGNED NOT NULL,
-  `board_state` VARCHAR(20) NOT NULL,  -- ejemplo: 'X,O,X,null,null,O,X,null,O'
-  `rounds` TINYINT UNSIGNED NOT NULL,
-  `player_symbol` ENUM('X', 'O') NOT NULL,
-  `difficulty` ENUM('facil', 'medio', 'dificil') NOT NULL,
-  `session_uso_coins` INT UNSIGNED NOT NULL DEFAULT 0,
-  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id_user`),
-  FOREIGN KEY (`id_user`) REFERENCES `arcade_uso`.`users`(`id_user`) ON DELETE CASCADE
-)
-ENGINE InnoDB
-CHARACTER SET utf8mb4
-COLLATE utf8mb4_bin;
-
--- -----------------------------------------------------
--- Index `arcade_uso`.`catbross`
--- -----------------------------------------------------
-CREATE INDEX `idx_user` ON `catbross`(`id_user`);
--- -----------------------------------------------------
--- Table `arcade_uso`.`minesweeper`
--- -----------------------------------------------------
-CREATE INDEX `idx_user` ON `minesweeper`(`id_user`);
-
-CREATE EVENT cleanup_expired_tokens
-ON SCHEDULE EVERY 1 DAY
-DO DELETE FROM tokens_store WHERE expires_at < NOW();
 
 INSERT INTO `arcade_uso`.`rewards` (`rarity`, `daro_points_value`, `chance`, `duration`)
 VALUES	('common',		10,		1,		5000.0),

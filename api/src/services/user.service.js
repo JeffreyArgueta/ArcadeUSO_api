@@ -1,13 +1,16 @@
 const User = require("../models/user.model");
-const { Sequelize } = require("sequelize");
+const { Sequelize, Op } = require("sequelize");
 const logger = require("../config/logger");
 const bcrypt = require("bcryptjs");
 
 const getAllUsers = async () => {
   try {
     const users = await User.findAll({ attributes: ["id_user", "username", "email"] });
-    if (!users.length) { logger.warn("⚠️ No hay usuarios registrados."); }
-    else { logger.info("ℹ️ Usuarios obtenidos") }
+    if (!users.length) {
+      logger.warn("⚠️ No hay usuarios registrados.");
+      return [];
+    }
+    logger.info("ℹ️ Usuarios obtenidos");
     return users;
   } catch (error) {
     logger.error("❌ Error obteniendo los usuarios:", error);
@@ -40,9 +43,8 @@ const getUserByUsername = async (username) => {
         ),
       },
     });
-
     if (!user) {
-      logger.warn(`⚠️ Usuario no encontrado: Username ${username}`)
+      logger.warn(`⚠️ Usuario no encontrado: Username ${username}`);
       return null;
     }
     logger.info(`ℹ️ Usuario obtenido: Username ${username}`);
@@ -63,9 +65,8 @@ const getUserByEmail = async (email) => {
         ),
       },
     });
-
     if (!user) {
-      logger.warn(`⚠️ Usuario no encontrado: Correo ${email}`)
+      logger.warn(`⚠️ Usuario no encontrado: Correo ${email}`);
       return null;
     }
     logger.info(`ℹ️ Usuario obtenido: Correo ${email}`);
@@ -78,52 +79,43 @@ const getUserByEmail = async (email) => {
 
 const createUser = async (userData) => {
   try {
-    if (userData.authentication_method === 'manual') {
-      if (!userData.password) throw new Error("⚠️ La contraseña es obligatoria para el registro.");
-
-      let user = await User.findOne({ where: { email: userData.email } });
-
-      if (user) {
-        logger.warn("⚠️ Usuario ya existente");
-        return null;
-      }
-
-      const hashedPassword = await bcrypt.hash(userData.password, 10);
-      user = await User.create({
-        username: userData.username,
-        email: userData.email,
-        password: hashedPassword,
-        authentication_method: "manual",
-        role: userData.role || "player",
-        uso_coins: userData.uso_coins || 0,
-        daro_points: userData.daro_points || 0
-      });
-
-      logger.info(`ℹ️ Usuario creado: Usuario ${user.username}, Correo ${user.email}`);
-      return user;
-    } else if (userData.authentication_method === "google") {
-      if (!userData.google_id) throw new Error("⚠️ Google ID es obligatorio para registro con Google.");
-
-      let user = await User.findOne({ where: { email: userData.email } });
-
-      if (user) {
-        logger.warn("⚠️ Usuario Google ya existente");
-        return null;
-      }
-
-      user = await User.create({
-        username: userData.username,
-        email: userData.email,
-        google_id: userData.google_id,
-        authentication_method: "google",
-        role: userData.role || "player",
-        uso_coins: userData.uso_coins || 0,
-        daro_points: userData.daro_points || 0
-      });
-
-      logger.info(`ℹ️ Usuario Google creado: ${user.username}, Correo ${user.email}`);
-      return user;
+    if (userData.authentication_method === "manual" && !userData.password) {
+      throw new Error("⚠️ La contraseña es obligatoria para el registro.");
     }
+    if (userData.authentication_method === "google" && !userData.google_id) {
+      throw new Error("⚠️ Google ID es obligatorio para registro con Google.");
+    }
+
+    const whereCondition = { email: userData.email };
+    if (userData.google_id) {
+      whereCondition.google_id = userData.google_id;
+    }
+
+    const existingUser = await User.findOne({ where: whereCondition });
+    if (existingUser) {
+      logger.warn("⚠️ Usuario ya existente");
+      return null;
+    }
+
+    const userDataToSave = {
+      username: userData.username,
+      email: userData.email,
+      authentication_method: userData.authentication_method,
+      role: userData.role || "player",
+      uso_coins: userData.uso_coins || 0,
+      daro_points: userData.daro_points || 0,
+    };
+
+    if (userData.authentication_method === "manual") {
+      userDataToSave.password = bcrypt.hashSync(userData.password, 10);
+    }
+    if (userData.authentication_method === "google") {
+      userDataToSave.google_id = userData.google_id;
+    }
+
+    const newUser = await User.create(userDataToSave);
+    logger.info(`ℹ️ Usuario creado: ${newUser.username}, Correo: ${newUser.email}`);
+    return newUser;
   } catch (error) {
     logger.error("❌ Error creando al usuario:", error);
     throw error;
@@ -139,8 +131,14 @@ const updateUser = async (id_user, newData) => {
     }
     await user.update({
       ...newData,
+      username: newData.username ?? user.username,
+      email: newData.email ?? user.email,
+      password: newData.password ?? user.password,
+      google_id: newData.google_id ?? user.google_id,
+      authentication_method: newData.authentication_method ?? user.authentication_method,
+      role: newData.role ?? user.role,
       uso_coins: newData.uso_coins ?? user.uso_coins,
-      daro_points: newData.daro_points ?? user.daro_points
+      daro_points: newData.daro_points ?? user.daro_points,
     });
     logger.info(`ℹ️ Usuario actualizado: ID ${id_user}`);
     return user;

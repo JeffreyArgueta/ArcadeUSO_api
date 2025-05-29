@@ -14,7 +14,7 @@ const getRewardById = async (req, res) => {
   try {
     const { id_reward } = req.params;
     if (!id_reward) {
-      return res.status(400).json({ error: "⚠️ El ID de recompensa es obligatorio." });
+      return res.status(400).json({ error: "⚠️ El ID de recompensa es obligatoria." });
     }
     const reward = await RewardService.getRewardById(id_reward);
     if (!reward) {
@@ -41,11 +41,11 @@ const getRewardsByRarity = async (req, res) => {
 
 const createReward = async (req, res) => {
   try {
-    const rewardData = req.body;
-    if (!rewardData.name || !rewardData.rarity || rewardData.chance == null) {
-      return res.status(400).json({ error: "⚠️ Nombre, rareza y probabilidad son obligatorios." });
+    const { rarity, daro_points_value, chance, duration } = req.body;
+    if (!rarity == null || !daro_points_value == null || !chance == null || !duration == null) {
+      return res.status(400).json({ error: "⚠️ Rareza, daro points, probabilidad y duración son obligatorios." });
     }
-    const newReward = await RewardService.createReward(rewardData);
+    const newReward = await RewardService.createReward({ rarity, daro_points_value, chance, duration });
     res.status(201).json(newReward);
   } catch (error) {
     errorHandler(res, error, "Error creando recompensa");

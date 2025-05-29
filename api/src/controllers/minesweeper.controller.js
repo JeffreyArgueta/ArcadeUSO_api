@@ -6,7 +6,7 @@ const getAllGames = async (req, res) => {
     const games = await MinesweeperService.getAllGames();
     res.status(200).json(games);
   } catch (error) {
-    errorHandler(res, error, "Error obteniendo partidas");
+    errorHandler(res, error, "Error obteniendo partidas al buscaminas");
   }
 };
 
@@ -14,15 +14,15 @@ const getGameById = async (req, res) => {
   try {
     const { id_mine } = req.params;
     if (!id_mine) {
-      return res.status(400).json({ error: "⚠️ ID de partida es obligatorio." });
+      return res.status(400).json({ error: "⚠️ ID de partida al buscaminas es obligatorio." });
     }
     const game = await MinesweeperService.getGameById(id_mine);
     if (!game) {
-      return res.status(404).json({ error: `⚠️ Partida no encontrada: ID ${id_mine}` });
+      return res.status(404).json({ error: `⚠️ Partida al buscaminas no encontrada: ID ${id_mine}` });
     }
     res.status(200).json(game);
   } catch (error) {
-    errorHandler(res, error, "Error obteniendo partida por ID");
+    errorHandler(res, error, "Error obteniendo partida del buscaminas por ID");
   }
 };
 
@@ -35,20 +35,37 @@ const getGamesByUser = async (req, res) => {
     const games = await MinesweeperService.getGamesByUser(id_user);
     res.status(200).json(games);
   } catch (error) {
-    errorHandler(res, error, "Error obteniendo partidas por usuario");
+    errorHandler(res, error, "Error obteniendo partidas al buscaminas del usuario");
   }
 };
 
 const createGame = async (req, res) => {
   try {
-    const data = req.body;
-    if (!data.id_user || data.uso_coins_obtained == null || data.won == null) {
-      return res.status(400).json({ error: "⚠️ ID de usuario, uso_coins_obtained y resultado (won) son obligatorios." });
+    const { id_user, uso_coins_earned, won } = req.body;
+    if (!id_user || uso_coins_earned == null || won == null) {
+      return res.status(400).json({ error: "⚠️ ID de usuario, uso coins y resultado son obligatorios." });
     }
-    const game = await MinesweeperService.createGame(data);
-    res.status(201).json(game);
+    const newGame = await MinesweeperService.createGame({ id_user, uso_coins_earned, won });
+    res.status(201).json(newGame);
   } catch (error) {
-    errorHandler(res, error, "Error registrando partida");
+    errorHandler(res, error, "Error creando partida al buscaminas");
+  }
+};
+
+const updateGame = async (req, res) => {
+  try {
+    const { id_mine } = req.params;
+    const newData = req.body;
+    if (!id_mine || !newData) {
+      return res.status(400).json({ error: "⚠️ ID de partida y datos de actualización son obligatorios." });
+    }
+    const updatedGame = await MinesweeperService.updateGame(id_mine, newData);
+    if (!updatedGame) {
+      return res.status(404).json({ error: `⚠️ Partida al buscaminas no encontrada para actualizar: ID ${id_mine}` });
+    }
+    res.status(200).json(updatedGame);
+  } catch (error) {
+    errorHandler(res, error, "Error actualizando partida al buscaminas");
   }
 };
 
@@ -56,22 +73,16 @@ const deleteGame = async (req, res) => {
   try {
     const { id_mine } = req.params;
     if (!id_mine) {
-      return res.status(400).json({ error: "⚠️ ID de partida es obligatorio." });
+      return res.status(400).json({ error: "⚠️ ID de partida al buscaminas es obligatorio." });
     }
-    const result = await MinesweeperService.deleteGame(id_mine);
-    if (!result) {
-      return res.status(404).json({ error: `⚠️ Partida no encontrada: ID ${id_mine}` });
+    const deletedGame = await MinesweeperService.deleteGame(id_mine);
+    if (!deletedGame) {
+      return res.status(404).json({ error: `⚠️ Partida al buscaminas no encontrada para eliminar: ID ${id_mine}` });
     }
-    res.status(200).json(result);
+    res.status(200).json(deletedGame);
   } catch (error) {
-    errorHandler(res, error, "Error eliminando partida");
+    errorHandler(res, error, "Error eliminando partida al buscaminas");
   }
 };
 
-module.exports = {
-  getAllGames,
-  getGameById,
-  getGamesByUser,
-  createGame,
-  deleteGame,
-};
+module.exports = { getAllGames, getGameById, getGamesByUser, createGame, updateGame, deleteGame };

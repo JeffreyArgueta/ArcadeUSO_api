@@ -25,7 +25,9 @@ const Reward = sequelize.define("Reward", {
     validate: { min: 0 }
   }
 }, {
-  timestamps: false,
+  timestamps: true,
+  createdAt: "created_at",
+  updatedAt: "updated_at",
   tableName: "rewards"
 });
 

@@ -16,19 +16,17 @@ const User = sequelize.define("User", {
   email: {
     type: DataTypes.STRING(100),
     allowNull: false,
-    unique: true
+    unique: true,
+    validate: { isEmail: true }
   },
   password: {
     type: DataTypes.STRING(255),
     allowNull: true,
-    defaultValue: null,
-    validate: { notEmpty: true }
   },
   google_id: {
     type: DataTypes.STRING(255),
     allowNull: true,
     unique: true,
-    defaultValue: null
   },
   authentication_method: {
     type: DataTypes.ENUM('manual', 'google'),

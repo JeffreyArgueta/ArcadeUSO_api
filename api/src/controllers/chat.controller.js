@@ -26,8 +26,8 @@ const getMessagesByUser = async (req, res) => {
 const createMessage = async (req, res) => {
   try {
     const { id_user, message, message_type } = req.body;
-    if (!id_user || !message) {
-      return res.status(400).json({ error: "⚠️ El ID de usuario y el mensaje son obligatorios." });
+    if (!id_user || !message || !message_type) {
+      return res.status(400).json({ error: "⚠️ ID de usuario, mensaje y tipo son obligatorios." });
     }
     const newMessage = await ChatService.createMessage({ id_user, message, message_type });
     res.status(201).json(newMessage);
@@ -36,11 +36,28 @@ const createMessage = async (req, res) => {
   }
 };
 
+const updateMessage = async (req, res) => {
+  try {
+    const { id_chat } = req.params;
+    const newData = req.body;
+    if (!id_chat || !newData) {
+      return res.status(400).json({ error: "⚠️ ID de mensaje y datos de actualización son obligatorios." });
+    }
+    const updatedMessage = await ChatService.updateMessage(id_chat, newData);
+    if (!updatedMessage) {
+      return res.status(404).json({ error: `⚠️ Mensaje no encontrado: ID ${id_chat}` });
+    }
+    res.status(200).json(updatedMessage);
+  } catch (error) {
+    errorHandler(res, error, "Error actualizando mensaje");
+  }
+};
+
 const deleteMessage = async (req, res) => {
   try {
     const { id_chat } = req.params;
     if (!id_chat) {
-      return res.status(400).json({ error: "⚠️ ID del mensaje es obligatorio." });
+      return res.status(400).json({ error: "⚠️ ID de mensaje es obligatorio." });
     }
     const deletedMessage = await ChatService.deleteMessage(id_chat);
     if (!deletedMessage) {
@@ -52,4 +69,4 @@ const deleteMessage = async (req, res) => {
   }
 };
 
-module.exports = { getAllMessages, getMessagesByUser, createMessage, deleteMessage };
+module.exports = { getAllMessages, getMessagesByUser, createMessage, updateMessage, deleteMessage };

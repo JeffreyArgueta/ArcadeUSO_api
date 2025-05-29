@@ -46,10 +46,10 @@ const getRewardsByRarity = async (rarity) => {
   }
 };
 
-const createReward = async (rewardData) => {
+const createReward = async ({ rarity, daro_points_value, chance, duration }) => {
   try {
-    const reward = await Reward.create(rewardData);
-    logger.info(`ℹ️ Recompensa creada: ID ${reward.id_reward}, Rarity: ${reward.rarity}`);
+    const reward = await Reward.create({ rarity, daro_points_value, chance, duration });
+    logger.info(`ℹ️ Recompensa creada: Rareza: ${rarity}, Daro_points: ${daro_points_value}`);
     return reward;
   } catch (error) {
     logger.error("❌ Error al crear recompensa:", error);
@@ -66,8 +66,10 @@ const updateReward = async (id_reward, newData) => {
     }
     await reward.update({
       ...newData,
+      rarity: newData.rarity ?? reward.rarity,
+      daro_points_value: newData.daro_points_value ?? reward.daro_points_value,
       chance: newData.chance ?? reward.chance,
-      daro_points_value: newData.daro_points_value ?? reward.daro_points_value
+      duration: newData.duration ?? reward.duration,
     });
     logger.info(`ℹ️ Recompensa actualizada: ID ${id_reward}`);
     return reward;
