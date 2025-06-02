@@ -68,25 +68,6 @@ CHARACTER SET utf8mb4
 COLLATE utf8mb4_bin;
 
 -- -----------------------------------------------------
--- Table `arcade_uso`.`catbross`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `catbross` (
-    `id_catbross` INT UNSIGNED AUTO_INCREMENT,
-    `id_user` INT UNSIGNED NOT NULL,
-    `completed_stages` INT UNSIGNED NOT NULL,
-    `time_left` INT UNSIGNED NOT NULL, -- en segundos
-    `uso_coins_obtained` INT UNSIGNED NOT NULL,
-    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id_catbross`),
-    CONSTRAINT `catbross_ibfk_1` FOREIGN KEY (`id_user`)
-		REFERENCES `arcade_uso`.`users` (`id_user`) ON DELETE CASCADE
-)
-ENGINE InnoDB
-CHARACTER SET utf8mb4
-COLLATE utf8mb4_bin;
-
--- -----------------------------------------------------
 -- Table `arcade_uso`.`minesweeper`
 -- -----------------------------------------------------
 CREATE TABLE `arcade_uso`.`minesweeper` (

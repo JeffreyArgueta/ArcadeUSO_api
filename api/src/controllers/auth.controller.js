@@ -23,6 +23,21 @@ const login = async (req, res) => {
   }
 };
 
+const generateUniqueUsername = async (name) => {
+  let baseName = name.replace(/\s+/g, "").toLowerCase();
+  baseName = baseName.substring(0, 10);
+
+  let username = baseName;
+  let count = 1;
+
+  while (await UserService.getUserByUsername(username)) {
+    username = `${baseName}${count}`;
+    count++;
+  }
+
+  return username;
+};
+
 const loginGoogle = async (req, res) => {
   try {
     const { code } = req.query;
@@ -40,8 +55,10 @@ const loginGoogle = async (req, res) => {
     let user = await UserService.getUserByEmail(googleData.email);
 
     if (!user) {
+      const uniqueUsername = await generateUniqueUsername(googleData.name);
+
       user = await UserService.createUser({
-        username: googleData.name.replace(/\s+/g, "").toLowerCase(),
+        username: uniqueUsername,
         email: googleData.email,
         google_id: googleData.google_id,
         authentication_method: "google",
