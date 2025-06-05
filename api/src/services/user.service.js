@@ -129,17 +129,25 @@ const updateUser = async (id_user, newData) => {
       logger.warn(`⚠️ Usuario no encontrado para actualizar: ID ${id_user}`);
       return null;
     }
-    await user.update({
-      ...newData,
-      username: newData.username ?? user.username,
-      email: newData.email ?? user.email,
-      password: newData.password ?? user.password,
-      google_id: newData.google_id ?? user.google_id,
-      authentication_method: newData.authentication_method ?? user.authentication_method,
-      role: newData.role ?? user.role,
-      uso_coins: newData.uso_coins ?? user.uso_coins,
-      daro_points: newData.daro_points ?? user.daro_points,
-    });
+
+    const filteredData = Object.fromEntries(
+      Object.entries(newData).filter(([_, value]) => value !== undefined)
+    );
+
+    await user.update(filteredData);
+
+    // await user.update({
+    //   ...newData,
+    //   username: newData.username ?? user.username,
+    //   email: newData.email ?? user.email,
+    //   password: newData.password ?? user.password,
+    //   google_id: newData.google_id ?? user.google_id,
+    //   authentication_method: newData.authentication_method ?? user.authentication_method,
+    //   role: newData.role ?? user.role,
+    //   uso_coins: newData.uso_coins ?? user.uso_coins,
+    //   daro_points: newData.daro_points ?? user.daro_points,
+    // });
+
     logger.info(`ℹ️ Usuario actualizado: ID ${id_user}`);
     return user;
   } catch (error) {
