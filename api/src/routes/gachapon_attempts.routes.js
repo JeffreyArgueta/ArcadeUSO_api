@@ -1,13 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const CatbrossController = require("../controllers/catbross.controller");
+const GachaponAttemptsController = require("../controllers/gachapon_attempts.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 
-router.get("/", authMiddleware, CatbrossController.getAllGames);
-router.get("/:id_catbross", authMiddleware, CatbrossController.getGameById);
-router.get("/user/:id_user", authMiddleware, CatbrossController.getGamesByUser);
-router.post("/", authMiddleware, CatbrossController.createGame);
-router.put("/:id_catbross", authMiddleware, CatbrossController.updateGame);
-router.delete("/:id_catbross", authMiddleware, CatbrossController.deleteGame);
+router.get("/", authMiddleware, GachaponAttemptsController.getAllAttempts);
+router.get("/user/:id_user", authMiddleware, GachaponAttemptsController.getAttemptsByUser);
+router.post("/", authMiddleware, GachaponAttemptsController.createAttempt);
+router.put("/:id_attempt", authMiddleware, GachaponAttemptsController.updateAttempt);
+router.delete("/:id_attempt", authMiddleware, GachaponAttemptsController.deleteAttempt);
 
 module.exports = router;
