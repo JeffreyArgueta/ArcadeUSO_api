@@ -4,6 +4,7 @@ const UserController = require("../controllers/user.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 
 router.get("/", authMiddleware, UserController.getAllUsers);
+router.get("/leaderboard", authMiddleware, UserController.getTopLeaderboard);
 router.get("/:id_user", authMiddleware, UserController.getUserById);
 router.get("/username/:username", UserController.getUserByUsername);
 router.get("/email/:email", UserController.getUserByEmail);
