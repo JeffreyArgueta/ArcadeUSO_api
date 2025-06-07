@@ -5,8 +5,6 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 
 const authRoutes = require("./src/routes/auth.routes");
-const catbrossRoutes = require("./src/routes/catbross.routes");
-const chatRoutes = require("./src/routes/chat.routes");
 const gachaponAttemptsRoutes = require("./src/routes/gachapon_attempts.routes");
 const minesweeperRoutes = require("./src/routes/minesweeper.routes");
 const rewardRoutes = require("./src/routes/reward.routes");
@@ -16,17 +14,16 @@ const userRoutes = require("./src/routes/user.routes");
 
 const app = express();
 
+const FRONTEND = process.env.FRONTEND;
 app.use(express.json());
 app.use(helmet());
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: FRONTEND,
   credentials: true
 }));
 app.use(morgan("dev"));
 
 app.use("/auth", authRoutes);
-app.use("/catbross", catbrossRoutes);
-app.use("/chat", chatRoutes);
 app.use("/gachapon_attempts", gachaponAttemptsRoutes);
 app.use("/minesweeper", minesweeperRoutes);
 app.use("/reward", rewardRoutes);
@@ -38,7 +35,7 @@ app.get("/", (req, res) => {
   res.send("🚀 Backend funcionando correctamente!");
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
 });
