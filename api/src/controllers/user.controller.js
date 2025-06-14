@@ -92,13 +92,4 @@ const deleteUser = async (req, res) => {
   }
 };
 
-const getTopLeaderboard = async (req, res) => {
-  try {
-    const topUsers = await UserService.getTopLeaderboard();
-    res.status(200).json(topUsers);
-  } catch (error) {
-    errorHandler(res, error, "Error obteniendo el leaderboard");
-  }
-};
-
-module.exports = { getAllUsers, getUserById, getUserByUsername, getUserByEmail, createUser, updateUser, deleteUser, getTopLeaderboard };
+module.exports = { getAllUsers, getUserById, getUserByUsername, getUserByEmail, createUser, updateUser, deleteUser };

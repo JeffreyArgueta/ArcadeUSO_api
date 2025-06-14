@@ -136,6 +136,18 @@ const updateUser = async (id_user, newData) => {
 
     await user.update(filteredData);
 
+    // await user.update({
+    //   ...newData,
+    //   username: newData.username ?? user.username,
+    //   email: newData.email ?? user.email,
+    //   password: newData.password ?? user.password,
+    //   google_id: newData.google_id ?? user.google_id,
+    //   authentication_method: newData.authentication_method ?? user.authentication_method,
+    //   role: newData.role ?? user.role,
+    //   uso_coins: newData.uso_coins ?? user.uso_coins,
+    //   daro_points: newData.daro_points ?? user.daro_points,
+    // });
+
     logger.info(`ℹ️ Usuario actualizado: ID ${id_user}`);
     return user;
   } catch (error) {
@@ -160,25 +172,4 @@ const deleteUser = async (id_user) => {
   }
 };
 
-const getTopLeaderboard = async () => {
-  try {
-    const topUsers = await User.findAll({
-      attributes: ["id_user", "username", "daro_points"],
-      order: [["daro_points", "DESC"]],
-      limit: 10, // 🔥 Solo los 10 con más puntos
-    });
-
-    if (!topUsers.length) {
-      logger.warn("⚠️ No hay suficientes usuarios para el leaderboard.");
-      return [];
-    }
-
-    logger.info("ℹ️ Leaderboard generado correctamente");
-    return topUsers;
-  } catch (error) {
-    logger.error("❌ Error obteniendo el leaderboard:", error);
-    throw error;
-  }
-};
-
-module.exports = { getAllUsers, getUserById, getUserByUsername, getUserByEmail, createUser, updateUser, deleteUser, getTopLeaderboard };
+module.exports = { getAllUsers, getUserById, getUserByUsername, getUserByEmail, createUser, updateUser, deleteUser };
