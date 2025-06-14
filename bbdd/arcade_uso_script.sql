@@ -127,25 +127,7 @@ ENGINE InnoDB
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_bin;
 
--- -----------------------------------------------------
--- Table `arcade_uso`.`chat`
--- -----------------------------------------------------
-CREATE TABLE `arcade_uso`.`chat` (
-    `id_chat` INT UNSIGNED AUTO_INCREMENT,
-    `id_user` INT UNSIGNED NOT NULL,
-    `message` TEXT NOT NULL,
-    `message_type` ENUM('player', 'system') NOT NULL DEFAULT 'player',
-    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id_chat`),
-    CONSTRAINT `chat_ibfk_1` FOREIGN KEY (`id_user`)
-		REFERENCES `arcade_uso`.`users` (`id_user`) ON DELETE CASCADE
-)
-ENGINE InnoDB
-CHARACTER SET utf8mb4
-COLLATE utf8mb4_bin;
-
 INSERT INTO `arcade_uso`.`rewards` (`rarity`, `daro_points_value`, `chance`, `duration`)
-VALUES	('common',		10,		1,		5000.0),
-		('epic', 		70,		1,		6000.0),
-		('legendary',	200,	100,	14000.0);
+VALUES	('common',		10,		60,		5000.0),
+		('epic', 		70,		30,		6000.0),
+		('legendary',	200,	10,	14000.0);
